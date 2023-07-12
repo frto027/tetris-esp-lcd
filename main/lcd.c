@@ -46,6 +46,7 @@ void htWrite(uint8_t address, uint8_t *data, uint32_t size_in_bit){
 }
 
 uint8_t scrBuffer[10][20];
+uint8_t scrNexts[6];
 int scrSpeedNum = 0, scrLevelNum = 0; /*0 ~ 19*/
 int scrScore = 0; /*0000 ~ 9999*/
 /* booleans */
@@ -97,18 +98,28 @@ void flushScene(){
     if(scrLevelNum / 10)
         lcdData.a_38 |= 2;
     
-    lcd_data_speed(&lcdData, scrSpeedNum % 10);
-    lcd_data_level(&lcdData, scrLevelNum % 10);
+    // lcd_data_speed(&lcdData, scrSpeedNum % 10);
+    // lcd_data_level(&lcdData, scrLevelNum % 10);
 
-    int score = scrScore;
-    lcd_data_digit_4(&lcdData, score % 10);
-    score /= 10;
-    lcd_data_digit_3(&lcdData, score % 10);
-    score /= 10;
-    lcd_data_digit_2(&lcdData, score % 10);
-    score /= 10;
-    lcd_data_digit_1(&lcdData, score % 10);
+    lcd_data_speed(&lcdData, scrNexts[4] % 10);
+    lcd_data_level(&lcdData, scrNexts[5] % 10);
+
+    // int score = scrScore;
+    // lcd_data_digit_4(&lcdData, score % 10);
+    // score /= 10;
+    // lcd_data_digit_3(&lcdData, score % 10);
+    // score /= 10;
+    // lcd_data_digit_2(&lcdData, score % 10);
+    // score /= 10;
+    // lcd_data_digit_1(&lcdData, score % 10);
     
+    lcd_data_digit_1(&lcdData, scrNexts[0]);
+    lcd_data_digit_2(&lcdData, scrNexts[1]);
+    lcd_data_digit_3(&lcdData, scrNexts[2]);
+    lcd_data_digit_4(&lcdData, scrNexts[3]);
+
+
+
     if(scrSpeedLevelMan)
         lcdData.a_36 |= 2;
     if(scrHandUp)

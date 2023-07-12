@@ -40,6 +40,7 @@ void flushScene();
 void htWrite(uint8_t address, uint8_t *data, uint32_t size_in_bit);
 
 extern uint8_t scrBuffer[10][20];
+extern uint8_t scrNexts[6];
 
 extern int scrSpeedNum, scrLevelNum; /*0 ~ 19*/
 extern int scrScore; /*0000 ~ 9999*/

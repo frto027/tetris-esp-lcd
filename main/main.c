@@ -46,6 +46,10 @@ fte_tetromino_t PickItem()
 
 int died = 0;
 
+int ghost_piece_flash = 0;
+#define GHOST_PIECE_FLASH_DURATION 4
+#define GHOST_PIECE_FLASH_PARAM 3
+
 void MySpawnNext()
 {
     int count;
@@ -55,6 +59,9 @@ void MySpawnNext()
     if (count == 4)
     {
         scrScore += 70;
+    }
+    for(int i=0;i<6;i++){
+        scrNexts[i] = queue[i];
     }
 }
 
@@ -81,15 +88,25 @@ void MyHold()
 static unsigned int first_pressed[10] = {0};
 static unsigned int last_repeat[10] = {0};
 
-int RepeatCheckInput(int x)
-{
 #define FIRST_DURATION 40
 #define REPEAT_DURATION 10
+int RepeatCheckInputFirstOnly(int x)
+{
     if (!first_pressed[x])
     {
         first_pressed[x] = last_repeat[x] = tick;
         return 1;
     }
+    return 0;
+}
+int RepeatCheckInput(int x)
+{
+    if (!first_pressed[x])
+    {
+        first_pressed[x] = last_repeat[x] = tick;
+        return 1;
+    }
+
     if (first_pressed[x] + FIRST_DURATION > tick)
         return 0;
     if (last_repeat[x] + REPEAT_DURATION > tick)
@@ -133,7 +150,7 @@ void HandleInput()
         ResetCheckInput(2);
     if (IS_BTN(BTN_U))
     {
-        if (RepeatCheckInput(3))
+        if (RepeatCheckInputFirstOnly(3))
         {
             while (fteMoveDown(&game) != FTE_RESULT_MOVE_FAILED)
                 ;
@@ -142,6 +159,19 @@ void HandleInput()
     }
     else
         ResetCheckInput(3);
+    
+    if (IS_BTN(BTN_START))
+    {
+        if (RepeatCheckInputFirstOnly(7))
+        {
+            while (fteMoveDown(&game) != FTE_RESULT_MOVE_FAILED)
+                ;
+            MySpawnNext();
+        }
+    }
+    else
+        ResetCheckInput(7);
+
     if (IS_BTN(BTN_ROT_L))
     {
         if (RepeatCheckInput(4) && fteRotLeft(&game) != FTE_RESULT_MOVE_FAILED)
@@ -169,7 +199,7 @@ void GameStart(unsigned int seed)
 {
     fteGameInit(&game);
     fte7BagInit(&bag, seed);
-    fteGameSetGhost(&game, 0);
+    fteGameSetGhost(&game, 1);
     for (int i = 0; i < 6; i++)
     {
         queue[i] = fte7BagGenItem(&bag);
@@ -203,11 +233,17 @@ void UpdateFrame()
     {
         for (int j = 0; j < FTE_WIDTH; j++)
         {
+            if(game.colors[j][i] == FTE_COLOR_GHOST){
+                scrBuffer[j][i] = ghost_piece_flash < GHOST_PIECE_FLASH_PARAM;
+                continue;
+            }
             scrBuffer[j][i] = !!game.colors[j][i];
+            
         }
     }
     scrGameOver = died;
     scrNextTetrimino = hold;
+    ghost_piece_flash = (ghost_piece_flash + 1) % GHOST_PIECE_FLASH_DURATION;
 }
 
 void tetrisTask(void *p)
@@ -243,6 +279,6 @@ void app_main(void)
 {
     btnInit();
     lcdInit();
-    wifiinit();
+    // wifiinit();
     xTaskCreate(tetrisTask, "tetris_task", 2000, NULL, tskIDLE_PRIORITY, &tetrisTaskHandle);
 }

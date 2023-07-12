@@ -1,5 +1,5 @@
-LCD_MODE = "CODE"
-# LCD_MODE = "TETRIS"
+# LCD_MODE = "CODE"
+LCD_MODE = "TETRIS"
 
 print("generating main/lcdNum.inl")
 
