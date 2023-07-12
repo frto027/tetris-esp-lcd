@@ -135,19 +135,19 @@ void flushScene(){
         lcd_data_tetromino_O(&lcdData);
         break;
     case 3:
-        lcd_data_tetromino_J(&lcdData);
-        break;
-    case 4:
-        lcd_data_tetromino_L(&lcdData);
-        break;
-    case 5:
         lcd_data_tetromino_T(&lcdData);
         break;
-    case 6:
+    case 4:
         lcd_data_tetromino_S(&lcdData);
         break;
-    case 7:
+    case 5:
         lcd_data_tetromino_Z(&lcdData);
+        break;
+    case 6:
+        lcd_data_tetromino_J(&lcdData);
+        break;
+    case 7:
+        lcd_data_tetromino_L(&lcdData);
         break;
     }
 

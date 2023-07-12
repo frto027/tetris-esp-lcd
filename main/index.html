@@ -1,0 +1,24 @@
+<html>
+    <body>
+        <div id="display">hello, world</div>
+        <script>
+            function update(){
+                let req = new XMLHttpRequest()
+                let taken = false
+                req.onreadystatechange = function(){
+                    if(req.readyState != 4)
+                        return
+                    if(taken)
+                        return
+                    taken = true
+                    document.getElementById("display").innerText = req.responseText
+                    setTimeout(update, 100)
+                }
+                req.open("GET", "/data")
+                req.send()
+            }
+
+            update();
+        </script>
+    </body>
+</html>

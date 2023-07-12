@@ -1,7 +1,7 @@
 {
   "C_Cpp.intelliSenseEngine": "Tag Parser",
   "idf.adapterTargetName": "esp32",
-  "idf.portWin": "COM4",
+  "idf.portWin": "COM3",
   "idf.flashType": "UART",
   "files.associations": {
     "uart.h": "c",
@@ -11,6 +11,7 @@
     "string_view": "c",
     "bitset": "c",
     "btn.inl": "c",
-    "lcdnum.inl": "c"
+    "lcdnum.inl": "c",
+    "btn.h": "c"
   }
 }

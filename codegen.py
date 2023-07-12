@@ -1,3 +1,8 @@
+LCD_MODE = "CODE"
+# LCD_MODE = "TETRIS"
+
+print("generating main/lcdNum.inl")
+
 """
   1
 6   2
@@ -17,6 +22,22 @@ code = [
 [1,1,1,1,1,1,1],
 [1,1,1,1,0,1,1]
 ]
+
+tetris_code = [
+[0,0,0,0,0,0,0],#define FTE_TETROMINO_NONE 0
+[0,1,1,0,0,0,0],#define FTE_TETROMINO_I 1
+[0,0,1,1,1,0,1],#define FTE_TETROMINO_O 2
+[0,1,1,0,0,0,1],#define FTE_TETROMINO_T 3
+[0,0,1,0,0,1,1],#define FTE_TETROMINO_S 4
+[0,1,0,0,1,0,1],#define FTE_TETROMINO_Z 5
+[0,1,1,1,0,0,0],#define FTE_TETROMINO_J 6
+[0,0,0,1,1,1,0],#define FTE_TETROMINO_L 7
+[0,0,0,0,0,0,0],
+[0,1,1,0,0,0,0],
+]
+
+if LCD_MODE == "TETRIS":
+    code = tetris_code
 
 intrested_addresses = set()
 
@@ -101,7 +122,7 @@ gen_tetromino("T","11101000")
 gen_tetromino("S","00111100")
 gen_tetromino("Z","11001100")
 
-print(intrested_addresses)
+# print(intrested_addresses)
 
 struct_define = "union LcdData{\n"
 struct_define += "struct{\n"
@@ -129,7 +150,19 @@ COMMENT = """
 
 with open("main/lcdNum.inl", 'w') as f:
     f.write(COMMENT + struct_define + all_result)
+print("over")
 
+print("generating htmls.inl")
 
+from glob import glob
 
-print(min(intrested_addresses), max(intrested_addresses))
+output = ""
+for f in glob("main/*.html"):
+    fname = f[5:-5]
+    with open(f, "r", encoding="utf8") as ff:
+        ftext = ff.read().replace("\\","\\\\").replace("\n","\\n").replace("\t","\\t").replace("\"","\\\"")
+        ftext = '"' + ftext + '"'
+    output += f"#define HTML_{fname.upper()} {ftext}\n"
+with open("main/htmls.inl","w",encoding="utf8") as f:
+    f.write(output)
+print("over")
