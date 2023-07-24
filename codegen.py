@@ -99,6 +99,7 @@ def gen_tetromino(name, desc):
     all_result += result
 
 """
+地址位置序列
   1
 6   2
   7
@@ -114,6 +115,13 @@ gen_code("digit_2","53.2 53.1 45.1 41.2 45.2 49.2 49.1")
 gen_code("digit_3","52.8 52.4 44.4 40.8 44.8 48.8 48.4")
 gen_code("digit_4","52.2 52.1 44.1 40.2 44.2 48.2 48.1")
 
+
+"""
+方块01信息位置序列
+1 2 3 4
+  5 6
+  7 8
+"""
 gen_tetromino("I","11110000")
 gen_tetromino("O","00001111")
 gen_tetromino("J","00100111")
