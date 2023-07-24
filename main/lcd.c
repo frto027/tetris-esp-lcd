@@ -61,7 +61,7 @@ int scrNextTetrimino = 0;
 
 #include "lcdNum.inl"
 
-void flushScene(){
+void flushScene(bool onlyScreen){
     uint8_t line[2];
     for(int i=0;i<8;i++){
         line[0]=line[1]=0;
@@ -90,6 +90,8 @@ void flushScene(){
         }
         htWrite(68-(i-16)*4,line,16);
     }
+    if(onlyScreen)
+        return;
 
     union LcdData lcdData = {};
 

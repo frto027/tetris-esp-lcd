@@ -36,7 +36,7 @@ void lcdInit();
 void htSendCMD(uint8_t cmd);
 void htOn();
 void htOff();
-void flushScene();
+void flushScene(bool onlyScreen);
 void htWrite(uint8_t address, uint8_t *data, uint32_t size_in_bit);
 
 extern uint8_t scrBuffer[10][20];
