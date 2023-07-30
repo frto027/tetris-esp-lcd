@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <driver/uart.h>
+#include <driver/gptimer.h>
 #include <string.h>
 #include <freertos/task.h>
 #include <driver/gpio.h>
@@ -9,8 +10,12 @@
 #include "libftetris.h"
 #include "esp_timer.h"
 
-TaskHandle_t tetrisTaskHandle;
+#include "badapple_midi.inc"
 
+#define BEEP_GPIO GPIO_NUM_19
+#define BEEP_BASE 1000*1000
+TaskHandle_t tetrisTaskHandle;
+void setBeepFreq(int freq);
 void test(int addr, uint8_t bit)
 {
     htWrite(addr, &bit, 4);
@@ -57,6 +62,12 @@ void tick(void *arg){
     }else{
         flushScene(true);
     }
+
+    if(current_frame < sizeof(badapple_freqs) / sizeof(*badapple_freqs)){
+        setBeepFreq(badapple_freqs[current_frame]);
+    }else{
+        setBeepFreq(0);
+    }
 }
 esp_timer_create_args_t timer_create_args = {
     .callback = &tick,
@@ -84,12 +95,81 @@ esp_err_t data_handler(httpd_req_t *req)
 {
     return ESP_OK;
 }
+gptimer_handle_t gptimer = NULL;
+
+typedef struct {
+    uint64_t event_count;
+} example_queue_element_t;
+
+static bool beep_switch(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
+{
+    static bool cur = false;
+    gpio_set_level(BEEP_GPIO, cur);
+    cur = !cur;
+    return true;
+}
+
+gptimer_alarm_config_t alarm_config = {
+    .reload_count = 0, // counter will reload with 0 on alarm event
+    .alarm_count = 1000, // period = 1s @resolution 1MHz
+    .flags.auto_reload_on_alarm = true, // enable auto-reload
+};
+
+
+void beepInit(){
+    gpio_config_t beep_gpio_cfg = {
+        .pin_bit_mask = (1llu<<BEEP_GPIO),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = 1,
+        .pull_down_en = 0,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&beep_gpio_cfg);
+
+    gptimer_config_t timer_config = {
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+        .direction = GPTIMER_COUNT_UP,
+        .resolution_hz = 1 * BEEP_BASE, 
+    };
+    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
+
+    ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
+
+    gptimer_event_callbacks_t cbs = {
+        .on_alarm = beep_switch, // register user callback
+    };
+    ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &cbs, NULL));
+    ESP_ERROR_CHECK(gptimer_enable(gptimer));
+    ESP_ERROR_CHECK(gptimer_start(gptimer));
+}
+
+void setBeepFreq(int freq){
+    static int last_freq = 1;
+    if(freq == last_freq)
+        return;
+    if(last_freq && !freq){
+        gptimer_stop(gptimer);
+    }
+    if(freq && !last_freq){
+        gptimer_start(gptimer);
+    }
+    last_freq = freq;
+    if(freq){
+        alarm_config.alarm_count = BEEP_BASE / freq / 2;
+        if(alarm_config.alarm_count == 0){
+            alarm_config.alarm_count = 1;
+        }
+        ESP_ERROR_CHECK(gptimer_set_alarm_action(gptimer, &alarm_config));
+
+    }
+}
 
 void app_main(void)
 {
     btnInit();
     lcdInit();
     esp_timer_init();
+    beepInit();
     // wifiinit();
     xTaskCreate(tetrisTask, "tetris_task", 2000, NULL, tskIDLE_PRIORITY, &tetrisTaskHandle);
 }

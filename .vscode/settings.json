@@ -13,7 +13,8 @@
     "btn.inl": "c",
     "lcdnum.inl": "c",
     "btn.h": "c",
-    "*.inc": "c"
+    "*.inc": "c",
+    "task.h": "c"
   },
   "idf.openOcdConfigs": [
     "\\"
